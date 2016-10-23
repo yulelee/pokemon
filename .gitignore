@@ -1,6 +1,3 @@
-
-# Created by https://www.gitignore.io/api/python,macos
-
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -93,6 +90,9 @@ ENV/
 # Rope project settings
 .ropeproject
 
+### project specific ###
+data/
+preprocess/JSON
 
 ### macOS ###
 *.DS_Store

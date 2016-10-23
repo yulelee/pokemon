@@ -94,6 +94,12 @@ ENV/
 data/
 preprocess/JSON
 
+### Latex intermediate files
+*.aux
+*.log
+*.synctex.gz
+
+
 ### macOS ###
 *.DS_Store
 .AppleDouble

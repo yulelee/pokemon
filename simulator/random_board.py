@@ -7,7 +7,8 @@ import json
 
 class random_board():
 
-    def __init__(self, board_size, spawn_frequency = 2):
+    def __init__(self, board_size, spawn_frequency = 2, verbose = False):
+        self.verbose = verbose
         self.board_size = board_size
         self.spawn_frequency = spawn_frequency
         self.radar_radius = max(board_size // 4, 10)
@@ -18,6 +19,10 @@ class random_board():
         # a pokemon is represented by the data_type pokemon_spawn
         self.board = {}
         self.time = 0
+
+        # statistics about spawning
+        self.total_spawn_num = 0
+        self.total_spawn_score = 0
 
         # load in the score (reward) system
         with open('../preprocess/JSON/pokemon_score.json') as score_file:
@@ -54,6 +59,9 @@ class random_board():
         if position not in self.board:
             self.board[position] = []
         self.board[position].append(pokemon_spawn(pokemon[0], pokemon[1]))
+        if self.verbose: print pokemon[1] + ' spawned at ' + str(position)
+        self.total_spawn_num += 1
+        self.total_spawn_score += self.scores[pokemon[0] - 1]
 
     # the rader, detect the nearby pokemons
     def _nearby_pokemons(self):
@@ -98,16 +106,25 @@ class random_board():
     # this is the main function for the simulator to call, the argument is the direction to move the
     # agent, and the return values is the tuple (reward get by this move, radar information)
     def move_agent(self, action):
-        if action == 'Left': self.agent_position[0] -= 1
-        if action == 'Right': self.agent_position[0] += 1
-        if action == 'Down': self.agent_position[1] -= 1
-        if action == 'Up': self.agent_position[1] += 1
+        if action == 'Left': self.agent_position = (self.agent_position[0] - 1, self.agent_position[1])
+        if action == 'Right': self.agent_position = (self.agent_position[0] + 1, self.agent_position[1])
+        if action == 'Down': self.agent_position = (self.agent_position[0], self.agent_position[1] - 1)
+        if action == 'Up': self.agent_position = (self.agent_position[0], self.agent_position[1] + 1)
 
-        total_rewards = sum(self.scores(pokemon.pokemon_id - 1) for pokemon in self.board[self.agent_position])
-        del self.board[self.agent_position]
+        # catch and receive rewards
+        if self.agent_position in self.board and len(self.board[self.agent_position]) > 0:
+            total_rewards = sum(self.scores[pokemon.pokemon_id - 1] for pokemon in self.board[self.agent_position])
+            if self.verbose:
+                for pokemon in self.board[self.agent_position]:
+                    print pokemon.pokemon_name + ' catched at ' + str(self.agent_position)
+            num_pokemon_catched = len(self.board[self.agent_position])
+            del self.board[self.agent_position]
+        else:
+            total_rewards = 0
+            num_pokemon_catched = 0
         self.spend_time()
 
-        return (total_reward, self._nearby_pokemons())
+        return (total_rewards, num_pokemon_catched, self._nearby_pokemons())
 
     # used to debug
     def toString(self):

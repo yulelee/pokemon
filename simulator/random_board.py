@@ -58,7 +58,7 @@ class random_board():
     def _spawn(self, position, pokemon):
         if position not in self.board:
             self.board[position] = []
-        self.board[position].append(pokemon_spawn(pokemon[0], pokemon[1]))
+        self.board[position].append(pokemon_spawn(pokemon[0], pokemon[1], self.board_size))
         if self.verbose: print pokemon[1] + ' spawned at ' + str(position)
         self.total_spawn_num += 1
         self.total_spawn_score += self.scores[pokemon[0] - 1]

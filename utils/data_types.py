@@ -13,12 +13,12 @@ WORLD_SIZE = 30
 # the pokemon to disappear
 
 class pokemon_spawn():
-    def __init__(self, pokemon_id, pokemon_name):
+    def __init__(self, pokemon_id, pokemon_name, board_size):
         self.pokemon_id = pokemon_id
         self.pokemon_name = pokemon_name
         # maybe need to figure out a way to make this more scalable, the max and min time should
         # be relavent to the size of the board
-        self.time_remains = random.randint(5, WORLD_SIZE)
+        self.time_remains = random.randint(board_size // 2, int(board_size * 1.1))
 
     def __str__(self):
         return 'id: ' + str(self.pokemon_id) + '; name:' + self.pokemon_name + '; time_remain:' + str(self.time_remains)

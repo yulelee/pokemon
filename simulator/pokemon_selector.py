@@ -37,7 +37,7 @@ class pokemon_selector():
     # would be self.neighbor_rate ** 2, so it's more rare
     # this function returns a list of spawned pokemons, contains at least one pokemon, each element
     # is a tuple (pokemon_id, pokemon_name)
-    def get_init_pokemon(self):
+    def get(self):
         pokemon_id = self.init_selector.rvs()
         result = []
 

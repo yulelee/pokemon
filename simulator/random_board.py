@@ -3,6 +3,7 @@ import sys
 sys.path.insert(0, './../utils')
 from data_types import pokemon_spawn
 import pokemon_selector as ps
+import json
 
 class random_board():
 
@@ -14,8 +15,13 @@ class random_board():
         self.pokemon_selector = ps.pokemon_selector()
 
         # board is defined by a dictionary, tuple (x, y)=> a list of pokemons within this position
+        # a pokemon is represented by the data_type pokemon_spawn
         self.board = {}
         self.time = 0
+
+        # load in the score (reward) system
+        with open('../preprocess/JSON/pokemon_score.json') as score_file:
+            self.scores = json.load(score_file)
 
     def possible_moves(self):
         result = []
@@ -69,8 +75,6 @@ class random_board():
         # remove the distences, and just return a list of pokemons
         return map(lambda x: x[1], result)
 
-
-
     def spend_time(self):
 
         # if are at the frequency point, we need to spawn some new pokemons!
@@ -90,16 +94,20 @@ class random_board():
 
         self.time += 1
 
-        return self._nearby_pokemons()
-
-
     # assume the action is aquired by the board, therefore cannot be illegal
+    # this is the main function for the simulator to call, the argument is the direction to move the
+    # agent, and the return values is the tuple (reward get by this move, radar information)
     def move_agent(self, action):
         if action == 'Left': self.agent_position[0] -= 1
         if action == 'Right': self.agent_position[0] += 1
         if action == 'Down': self.agent_position[1] -= 1
         if action == 'Up': self.agent_position[1] += 1
 
+        total_rewards = sum(self.scores(pokemon.pokemon_id - 1) for pokemon in self.board[self.agent_position])
+        del self.board[self.agent_position]
+        self.spend_time()
+
+        return (total_reward, self._nearby_pokemons())
 
     # used to debug
     def toString(self):

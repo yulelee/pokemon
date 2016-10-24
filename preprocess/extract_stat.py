@@ -43,7 +43,9 @@ with open('JSON/pokemon_index.json', 'w') as output_file:
     json.dump(pokedex, output_file)
 
 # proposed score system
+# first extract the pokemon_id and score from the table
 scores = [(pokemon_id, total_count / count) for (pokemon_id, _, count, _) in table]
+scores = map(lambda x: x[1], sorted(scores))
 
 with open('JSON/pokemon_score.json', 'w') as output_file:
     json.dump(scores, output_file)

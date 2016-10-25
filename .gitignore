@@ -99,6 +99,8 @@ preprocess/JSON
 *.log
 *.synctex.gz
 
+### Vim ###
+$.swp
 
 ### macOS ###
 *.DS_Store

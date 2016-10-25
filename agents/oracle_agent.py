@@ -8,7 +8,7 @@ import heapq
 import random
 from data_types import pokemon_spawn
 
-class graph_node():
+class Graph_node():
     def __init__(self, position, total_rewards, time_remains, parent = None):
         self.position = position
         self.total_rewards = total_rewards
@@ -36,7 +36,7 @@ class graph_node():
     def __repr__(self):
         return self.__str__()
 
-class oracle_agent():
+class Oracle_agent():
 
     @staticmethod
     def make_decision(board):
@@ -50,7 +50,7 @@ class oracle_agent():
         if len(board_information) == 0:
             return random.choice(board.possible_moves())
 
-        agent_node = graph_node(agent_position, 0, 0)
+        agent_node = Graph_node(agent_position, 0, 0)
         all_nodes_reachable = []
 
         # construct the graph
@@ -60,7 +60,7 @@ class oracle_agent():
             total_rewards = 0
             for pokemon in time_sorted_pokemons:
                 total_rewards += pokemon_scores[pokemon.pokemon_id - 1]
-                node = graph_node(position, total_rewards, pokemon.time_remains, agent_node)
+                node = Graph_node(position, total_rewards, pokemon.time_remains, agent_node)
                 if agent_node.is_reachable(node): all_nodes_reachable.append(node)
 
 

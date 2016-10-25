@@ -100,7 +100,7 @@ preprocess/JSON
 *.synctex.gz
 
 ### Vim ###
-$.swp
+*.swp
 
 ### macOS ###
 *.DS_Store

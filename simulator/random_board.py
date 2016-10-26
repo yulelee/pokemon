@@ -81,8 +81,8 @@ class Random_board(object):
         # manhattan distence is the first element within each tuple, therefore is used to sort
         result.sort()
 
-        # remove the distences, and just return a list of pokemons
-        return map(lambda x: x[1], result)
+        # remove the distences, and just return a list of pokemons ids
+        return map(lambda x: x[1].pokemon_id, result)
 
     def spend_time(self):
 

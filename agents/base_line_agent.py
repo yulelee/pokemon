@@ -8,8 +8,7 @@ import math
 # the legal_action is defined by the board
 
 class Base_line_agent():
-    def __init__(self, legal_actions, exploration_prob = 0.2):
-        self.legal_actions = legal_actions
+    def __init__(self, legal_actions = None, exploration_prob = 0.2):
         self.exploration_prob = exploration_prob
         self.weights = {}
         self.num_iters = 0

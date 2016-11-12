@@ -21,10 +21,9 @@ with open('../data/pokemon_spawns_more.csv') as data_file:
 
 # for each dataset[index][index], it represent the times a pokemon appears with itself
 # which is not contained in the dataset, and is arbitrarily set to the max of all of
-# its neighbors, plus one, so a pokemon appears with itself is of the same probability of
-# most probable neighbor, with a slightly advantage
+# its neighbors, divided by 2
 for index in range(len(dataset)):
-    dataset[index][index] += max(dataset[index])
+    dataset[index][index] += max(dataset[index]) / 2.0
 
 with open('JSON/pokemon_neighbors_stats.json', 'w') as output_file:
     json.dump(dataset, output_file)

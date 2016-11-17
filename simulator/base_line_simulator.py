@@ -4,6 +4,7 @@ import random_board
 import regional_board
 import base_line_agent
 import improved_agent
+import reflect_agent
 
 # state for the problem is defined to be tuple (agent_position, radar)
 
@@ -15,10 +16,10 @@ def simulate(board, agent):
 
     old_state = (bd.agent_position, [])
 
-    for _ in range(8000):
+    for _ in range(5000):
         action = agent.get_action(old_state)
-        (reward, caught_num, radar) = bd.move_agent(action)
-        agent.incorperate_feedback(old_state, action, 1, (bd.agent_position, radar))
+        (reward, pokemon_caught, caught_num, radar) = bd.move_agent(action)
+        agent.incorperate_feedback(old_state, action, reward, pokemon_caught, (bd.agent_position, radar))
         old_state = (bd.agent_position, radar)
 
         total_rewards_received += reward
@@ -33,6 +34,9 @@ simulate(regional_board.Regional_board, base_line_agent.Base_line_agent())
 
 simulate(random_board.Random_board, improved_agent.Improved_agent())
 simulate(regional_board.Regional_board, improved_agent.Improved_agent())
+
+simulate(random_board.Random_board, reflect_agent.Reflect_agent())
+simulate(regional_board.Regional_board, reflect_agent.Reflect_agent())
 
 #import cProfile
 #import re

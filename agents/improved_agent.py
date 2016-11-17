@@ -43,7 +43,7 @@ class Improved_agent():
     def get_stepsize(self):
         return 1.0 / math.sqrt(self.num_iters)
 
-    def incorperate_feedback(self, state, action, reward, new_state):
+    def incorperate_feedback(self, state, action, reward, pokemons_caught, new_state):
         # the game could last forever, so there is no end state defined
 
         # add the current pokemons into the count, this is not the count being spawned,

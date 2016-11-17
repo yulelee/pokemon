@@ -8,7 +8,7 @@ import math
 # the legal_action is defined by the board
 
 class Base_line_agent():
-    def __init__(self, legal_actions = None, exploration_prob = 0.2):
+    def __init__(self, legal_actions = None, exploration_prob = 0.3):
         self.exploration_prob = exploration_prob
         self.weights = {}
         self.num_iters = 0
@@ -37,7 +37,7 @@ class Base_line_agent():
     def get_stepsize(self):
         return 1.0 / math.sqrt(self.num_iters)
 
-    def incorperate_feedback(self, state, action, reward, new_state):
+    def incorperate_feedback(self, state, action, reward, pokemons_caught, new_state):
         # the game could last forever, so there is no end state defined
 
         best_Q_after_new_state = max(self.get_Q(new_state, new_action) for new_action in self.legal_actions())

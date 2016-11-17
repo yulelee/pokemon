@@ -14,7 +14,7 @@ def simulate(board, agent):
     total_pokemon_num_catched = 0
 
     for _ in range(3000):
-        (rewards, catched_num, _) = rb.move_agent(agent.make_decision(rb))
+        (rewards, pokemons_caught, catched_num, _) = rb.move_agent(agent.make_decision(rb))
         total_rewards_received += rewards
         total_pokemon_num_catched += catched_num
 

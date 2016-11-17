@@ -2,8 +2,8 @@ from scipy import stats
 import random
 import json
 
-class pokemon_selector():
-    def __init__(self, neighbor_rate = 0.3):
+class Pokemon_selector():
+    def __init__(self, neighbor_rate = 0.02):
         with open('../preprocess/JSON/pokemon_freq.json') as freq_table_file:
             self.freq_table = json.load(freq_table_file)
 

@@ -29,12 +29,15 @@ def simulate(board, agent):
     print bd.total_spawn_score, total_rewards_received, (total_rewards_received * 1.0 / bd.total_spawn_score)
     print bd.total_spawn_num, total_pokemon_num_catched, (total_pokemon_num_catched * 1.0 / bd.total_spawn_num)
 
+print 'base line agent'
 simulate(random_board.Random_board, base_line_agent.Base_line_agent())
 simulate(regional_board.Regional_board, base_line_agent.Base_line_agent())
 
+print 'improved agent'
 simulate(random_board.Random_board, improved_agent.Improved_agent())
 simulate(regional_board.Regional_board, improved_agent.Improved_agent())
 
+print 'reflect agent'
 simulate(random_board.Random_board, reflect_agent.Reflect_agent())
 simulate(regional_board.Regional_board, reflect_agent.Reflect_agent())
 

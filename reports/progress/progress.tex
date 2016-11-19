@@ -1,0 +1,358 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage, enumitem, amsmath, amssymb, 
+	graphicx, dirtytalk, tikz, listings, titlesec}
+
+\usepackage[margin=0.8in]{geometry}
+
+\makeatletter
+\@addtoreset{equation}{enumi}
+\makeatother
+
+\graphicspath{ {images/} }
+\titlespacing*{\section}{0pt}{0.5ex plus 1ex minus .2ex}{0.5ex plus .2ex}
+
+\graphicspath{ {images/} }
+
+\begin{document}
+
+\begin{center}
+{\Large CS221 Project Progress\\
+Catch'em all: A Pok\'emon Go Playing AI}
+
+\begin{tabular}{rl}
+\newline
+\\ 
+SUNet ID: & yulelee \\
+Name: & Yue Li \\
+\end{tabular}
+\end{center}
+\section*{Background}
+Pok\'emons Go is a popular game for which
+the players need to go out and explore. 
+In this project, I'll focus on 
+one aspect of this game: 
+catching Pok\'emons. The basic rule is: Pok\'emons are spawned at
+different places in the real world, if you are near enough to them, 
+they will show up so that 
+you can catch them. 
+As a result, it would be fun to simulate the game and create an
+AI agent that tries to catch
+as many Pok\'emons as possible. 
+
+\section*{Simulation}
+The simulation of this game takes 3 components:
+\begin{enumerate}[label=(\alph*)]
+    \item Board: \\
+    The game is simulated by a $n \times n$ board. Each position is 
+    represented by a tuple of coordinates. The board is responsible for
+    spawning Pok\'emons at various positions. The agent
+    is also at a certain position on the board. The board should
+    implement the \texttt{move\_agent} method, which takes an action
+    (including ``Left'', ``Right'', ``Up'' or ``Down'') as argument,
+    and
+	return the new position, the radar information (a list of nearby
+	Pok\'emon IDs), and the rewards (if there are Pok\'emons at the
+	new position, the agent could catch them all and get the scores).
+	\item Agent: \\
+	The agent should implement two methods: (1) \texttt{get\_action} 
+	evaluate the current situation (which includes the current
+	position of agent and the radar list of nearby Pok\'emons), 
+	and make a decision of where
+	to go next.
+	(2) \texttt{incorperate\_feedback}: for each action and its outcome,
+	 the agent has a chance of learning useful things from them. The 
+	arguments for this methods includse the old and new position of the 
+	agent, the radar information, and the Pok\'emons being caught 
+	(if there is any).
+	\item Simulator:
+	A simulator is like a middle man between the board and agent, 
+	calling the above methods and also recording all of the useful
+	statistics.
+\end{enumerate}
+\par
+Overall, the simulation is proceeded by iterations, the board might spawn a few new Pok\'emons according to the statistics
+from real life data. Each of the newly spawned Pok\'emon comes with
+an initial disappearing clock (an integer), which would
+be decremented for each iteration. As a result, the board also need to 
+check the clock of all the existing Pok\'emons, if anyone's clock 
+hits 0, the corresponding Pok\'emon would be deleted. Also, for 
+each iteration, the agent has the chance to move one step on the 
+board, towards the direction it thinks is the best. 
+
+
+\section*{Input and Output}
+For this game, no special input is needed, the game could
+just start (agent being put to the center of the board). We also don't
+have an end state, 
+the game will be forced
+to end after a certain amount of iterations.
+Two metrics (output) are used to measure the performance of the agent:
+\begin{enumerate}[label=(\alph*)]
+    \item Percentage of scores being caught:
+    Given the real life data, each type of Pok\'emon has been assigned
+    with a score, which is calculate by this formula, for a given type
+    of Pok\'emon $p$:
+    \[
+    \text{score}_{p} = \frac{K + \sum_i C_i}{C_p + 1}
+    \]
+    where $K$ is the total types of Pok\'emons (currently 151), and 
+    $C_p$ represent the count of appearance for a Pok\'emon type $p$
+    from the dataset. Because the dataset is limited, 
+    all types of Pok\'emons get 1 ``free'' count, 
+    so in my simulation even Mewtwo (a Pok\'emon that is not
+    currently included in the game) is technically possible
+    to appear. Also,
+	the scores are not revealed to the agent, the agent has to learn
+	from the game which Pok\'emons are better.
+    	\item Percentage of Pok\'emons being caught. 
+
+       
+\end{enumerate}
+For those two metrics, percentage of Pok\'emons is used to
+measure the agent's ability of finding Pok\'emons, while
+the percentage of scores is used to measure whether the agent
+is able to actively prioritize more valuable Pok\'emons to catch. 
+
+
+\section*{MDP}
+The game is formulated to be a MDP problem with the following components:
+\begin{enumerate}[label=(\alph*)]
+	\item States: The states are defined to be a combination of the current agent
+	position, and the list of nearby Pok\'emons (a list of Pok\'emons IDs).
+	 The agent is initialized to the center of the
+	board, so the start state is the center position plus an empty list of 
+	Pok\'emons. There is no end state.
+	\item Actions: The actions includes the four possible directions
+	the agent can move, 
+	``Left'', ``Right'', ``Up'', ``Down''. A legal action is any of
+	those actions that does not move the agent out of the board. Currently,
+	there is no ``Stay'' action being incorporated.
+	\item Transitions: Since there are 2 parts within the states, the 
+	agent position can be determined by the action, but the nearby Pok\'emons
+	list
+	is controlled by the board and therefore by randomness. 
+	The Pok\'emons are randomly generated as described in project proposal.
+
+	
+	
+\end{enumerate}
+
+\section*{Base line agent}
+\par
+The state space of this game is huge. On an 50$\times$50 board, there are 
+2500 different positions, but the real challenge comes with the list of nearby 
+Pok\'emons. If each Pok\'emons could only appear once in the list, the overall
+number of different combinations would be $2^{151}$, but still, since
+there could be 2 Pidgeys around at the same time, the number of 
+combinations is in fact infinite.
+\par
+The base line agent resolve this problem by utilizing 
+Q-learning algorithm with function approximation.
+The weight vector $w$ is initialized to be 0, and updated
+in the \texttt{incorperate\_feedback} method:
+\[
+w^{(t+1)} := w^{(t)} - \eta[\hat{Q}_{opt}(s, a, w) - r - \hat{V}_{opt}(s')] \phi(s,a)
+\]
+More specifically:
+\begin{enumerate}[label=(\alph*)]
+\item
+$s$ is the old state, $s'$ is the new state, 
+and $a$ is the action transit from $s$ to $s'$
+\item$\eta$ is the learning rate, computed by $\eta = \frac{1}{\sqrt{t}}$
+		where $t$ is the current number of iterations
+\item $r$ is the reward, equals the real scores issued by the board for
+ catching Pok\'emons.
+\item The feature 
+extractor $\phi$ constructs indicator features for
+all of the information from the current state. For
+example, if the current state is: 
+  \{`agent\_position': (20, 25), `radar': [1,4]\},
+then the feature vector would be 
+  \{`agent\_at\_x20': 1, `agent\_at\_y25': 1, `pokemon\_1': 1, `pokemon\_4': 1\}.
+
+\item $\hat{Q}_{opt}(s,a)$ is the estimation of the optimal value if take
+action $a$ from state $s$, and $\hat{V}_{opt}(s)$ is the estimate of the optimal
+value from state $s$, they are computed by:
+\[\hat{Q}_{opt}(s, a, w) = w^{(t)\top}\phi(s, a)\]
+\[\hat{V}_{opt}(s') = \max_{a' \in \text{Actions}(s')}{\hat{Q}_{opt}(s', a')}\]
+\end{enumerate}
+For the \texttt{get\_action} method, the agent compute the $\hat{Q}_{opt}(s,a)$
+for all the legal actions from the current state, and returns the best one.
+The agent maintains an exploration rate of 0.2 to take a random move.
+
+\section*{Improved Agent}
+One major problem with the base line is that the reward comes too late to be 
+useful. For example, the agent has to take 10 consecutive ``good'' moves 
+in order to reach a Pok\'emon, but the reward would only be issued to the 
+last move. The improved agent
+tries to tackle this problem by letting the
+agent issue some reward to itself to encourage ``seemingly good'' moves.
+Most of the infrastructure 
+of the improved agent is exactly the same as the base line agent, except the
+following:
+\begin{enumerate}[label=(\alph*)]
+\item
+The agent now keeps track of the rareness of the Pok\'emons, by counting 
+the Pok\'emons it has seen. A counter has been setup for each type of 
+Pok\'emons, and is incremented whenever the agent sees one Pok\'emon 
+of that type. To ``see'' a Pok\'emon, the agent don't need to actually
+catch it, the counter would be incremented as long as the Pok\'emon
+is in the radar. 
+\item In the \texttt{incorperate\_feedback} method, the reward is modified by:
+\[
+	r' = r + \gamma \sum_{R_i} \frac{1}{C_{R_i}} \mathbf{I}\{R_i \in P\}
+\]
+where $r$ is the score issued by the board (most of the time equals 0), 
+$C_{R_i}$ is the counter for the $i$th Pok\'emon in the current radar $R$.
+$P$ is the Pok\'emons in the previous radar, which should be saved and
+updated for every iteration. Here $C_{R_i}$ would never be 0, because if 
+we've seen $R_i$ in the last radar, $C_{R_i}$ would be at least 1.
+As a result, this means that now we're encouraging the agent to 
+keep the Pok\'emons in the radar, instead of loosing track of them.
+Lastly, $\gamma$ is just a constant, by which we can use to adjust how
+much do we care about this, compared with the real scores.
+\end{enumerate}
+
+\section*{Reflect Agent}
+Reflect agent keeps track of the locations of actual Pok\'emons, and based
+on the history to find Pok\'emons in the radar. The intuition behind this 
+is that
+if I've caught a Growlithe at the back of my apartment, the next time 
+when I see a Growlithe on the radar, that might be the first place I want
+to go and check. 
+As a result, instead of seeing the game as a MDP, 
+the reflect agent keep track of a list of ``centers'' for different
+types of Pok\'emons, and when a Pok\'emon shows up in the radar, the 
+agent goes to the corresponding center. Here's details of implementation:
+\begin{enumerate}[label=(\alph*)]
+\item 
+The reflect agent also keep track of the rareness of Pok\'emons, using 
+the same method as the improved agent, so we have $C_i$ equals how many
+times we've seen the Pok\'emon (of ID $i$).
+\item
+In the \texttt{incorperate\_feedback} method, we update the rareness count
+as before, and also, update the ``centers''. For each Pok\'emon in the radar,
+we sample a random point on the board near the agent 
+from a Gaussian distribution, let's call this point $P$. If this is the 
+first time the agent sees this Pok\'emon, the center
+$O_i$ would be set to this point, otherwise, the $x$ and $y$ coordinates 
+of the center would
+be updated by this rule: 
+\[
+O_i := \frac{O_i (C_i-1) + P}{C_i} 
+\]
+If the agent has actually caught a Pok\'emon, instead of 
+sampling random nearby position, we just set $P$ to be the current agent
+position and update by $O_i = \frac{O_i + P}{2}$. The intuition is that
+we're giving higher weight to the actual catching positions, because 
+we're more confident about its usefulness.
+\item
+In the \texttt{get\_action} method, the agent makes the decision by
+considering the ``centers'' for all the Pok\'emons in radar. For a given 
+Pok\'emon with ID $i$, if the center $O_i$ is on the upper right
+of the current 
+agent position, this Pok\'emon would vote for
+``Up'' (or ``Rgiht'') with voting power $\frac{1}{C_i}$, the direction with the
+highest total votes wins. Still, there is a 0.2 chance for the agent
+to make a random move.
+
+\end{enumerate}
+\section*{Current results and Discussion}
+With 30000 iterations, on the ``regional board''($50 \times 50$), the average
+result for 10 runs is presented:
+\begin{center}
+\begin{tabular}{|c | c c|} 
+\hline
+Agent & Percentage of Scores& Percentage of Pok\'emons \\
+\hline
+\hline
+Random Agent & 0.12\% & 0.10\% \\ 
+\hline
+Base line Agent & 0.12\% & 0.12\% \\
+\hline
+Improved Agent & 0.43\% & 0.52\% \\
+\hline
+Reflect Agent & 1.13\% & 0.98\%  \\
+\hline
+Oracle Agent & 49.2\% & 17.9\% \\
+\hline
+\end{tabular}
+\end{center}
+Currently, the best agent is the reflect agent, however, 
+we've made a huge
+assumption for the reflect agent, which is each type of Pok\'emons
+only have one ``center''. The key parameters for controlling this includes
+\texttt{board.nearby\_variance}, which controls the position variance 
+of a certain type of Pok\'emons, and \texttt{pokemon\_selector.neighbor\_rate},
+which controls the probability of adding neighbors for an
+initial spawn (the mechanism for the \texttt{pokemon\_selector} is described 
+in the proposal). For an extreme case, if \texttt{neighbor\_rate = 0}
+and \texttt{nearby\_variance = 0.01}, the performance of reflect agent could
+be really great (6\% score and 8\% Pok\'emon), but in the ordinary setting, 
+where \texttt{neighbor\_rate = 0.15} and \texttt{nearby\_variance = 0.25 * board.size}, the result is listed in the above table.
+\par
+Overall, some progress has been made but there's a still 
+a lot of space to improve. 
+For the next step, I want to further generalize based
+on the reflect agent, constructing features for every position on the board.
+The feature values should be related with the probability of finding 
+Pok\'emons on that spot. 
+From the perspective of the agent, seeing a
+Pok\'emon in the radar (though not knowing the exact position), still
+increases the probability of all of the nearby positions to hold that Pok\'emon.
+
+\end{document} 
+
+\section*{Oracle Agent}
+The oracle agent has access to all of the
+information of the board, it knows the exact positions of all the Pok\'emons
+and their disappearing time, as well as all of the scores.
+Based on those information, it constructs a graph connecting all of the 
+Pok\'emons: each Pok\'emon is represented by a node, and
+an edge from one node to the other
+means it's possible for the player
+to catch this Pok\'emon first and then go to the 
+next one before the next one disappears, and the weight on each edge is
+defined to be the reward at the end node of this edge. Now the problem 
+is transformed into finding 
+the longest path on this graph, start from the agent's position.
+\par
+Since this is still not
+trivial, I deleted all the ``possible edges'' in the graph, and only leave 
+the ``guaranteed edges'', which is defined by
+the edges representing that you are guaranteed to be able to catch the 
+second Pok\'emon after catching the first one, not just possibly. As a result, it can be proved that now the 
+graph is reduced to a DAG, and the longest path can be found by
+dynamic programming following a topology sort.
+\par
+Overall, some progress has been made but there's a still 
+a long way to go, 
+compared with the oracle. There is one more agent (algorithm) I want
+to try, but have not finished yet. For now, let's call it Chemotaxis Agent. 
+Chemotaxis is the movement of microorganism in response to the gradient
+of chemicals in water (for example, its food). In this setting, 
+I want to setup features for each positions on the board (with values 
+corresponding to probabilities of catching Pok\'emons), and let the 
+agent follows the ``gradient'' to find the ``food''.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

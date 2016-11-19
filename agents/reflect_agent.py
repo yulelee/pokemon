@@ -6,9 +6,10 @@ import math
 
 
 class Reflect_agent():
-    def __init__(self, legal_actions = None, exploration_prob = 0.2):
+    def __init__(self, legal_actions = None, exploration_prob = 0.2, verbose = False):
         # still explore
         self.exploration_prob = exploration_prob
+        self.verbose = verbose
         self.weights = {}
         self.num_iters = 0
 
@@ -69,6 +70,8 @@ class Reflect_agent():
                 old_position = self.centers[pokemon_caught]
                 self.centers[pokemon_caught] = (int(0.5 * (old_position[0] + agent_position[0])), \
                                                 int(0.5 * (old_position[1] + agent_position[1])))
+            if self.verbose:
+                print 'pokemon', pokemons_caught, 'caught, now the center at:', self.centers[pokemon_caught]
 
 
 

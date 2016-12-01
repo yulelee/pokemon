@@ -4,6 +4,7 @@ sys.path.insert(0, './../utils')
 from data_types import pokemon_spawn
 import configurations as cf
 import pokemon_selector as ps
+import utilities as ut
 import json
 
 class Random_board(object):
@@ -68,15 +69,11 @@ class Random_board(object):
 
     # the rader, detect the nearby pokemons
     def _nearby_pokemons(self):
-        start_x = max(0, self.agent_position[0] - self.radar_radius)
-        start_y = max(0, self.agent_position[1] - self.radar_radius)
-        end_x = min(self.board_size, self.agent_position[0] + self.radar_radius)
-        end_y = min(self.board_size, self.agent_position[1] + self.radar_radius)
-
+        (start_x, start_y, end_x, end_y) = ut.get_radar_region(self.agent_position, self.radar_radius, self.board_size)
         result = []
         for x in range(start_x, end_x + 1):
             for y in range(start_y, end_y + 1):
-                if (x, y) in self.board:
+                if (x, y) in self.board: # if this position contains any pokemon
                     manhattan_dis = abs(x - self.agent_position[0]) + abs(y - self.agent_position[1])
                     result.extend([(manhattan_dis, pokemon) for pokemon in self.board[(x, y)]])
 

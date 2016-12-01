@@ -14,6 +14,9 @@ SPAWN_FREQUENCY = 2
 # the distance from the initial spawn 
 NEARBY_VARIANCE = 2
 
+MINIMUM_RADAR_SIZE = 5
+BOARD_TO_RADAR_RATIO = 2
+
 BOARD_VERBOSE = False
 
 
@@ -25,7 +28,7 @@ NEIGHBOR_RATE = 0.02
 
 ######################### simulators
 
-NUM_ITERATIONS = 5000
+NUM_ITERATIONS = 10000
 
 
 ######################### agents

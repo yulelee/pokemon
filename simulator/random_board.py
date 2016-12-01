@@ -8,11 +8,11 @@ import json
 
 class Random_board(object):
 
-    def __init__(self, board_size = cf.WORLD_SIZE, spawn_frequency = cf.SPAWN_FREQUENCY, verbose = cf.BOARD_VERBOSE, nearby_variance = cf.NEARBY_VARIANCE):
+    def __init__(self, board_size = cf.WORLD_SIZE, spawn_frequency = cf.SPAWN_FREQUENCY, verbose = cf.BOARD_VERBOSE, nearby_variance = cf.NEARBY_VARIANCE, radar_radius = cf.MINIMUM_RADAR_SIZE):
         self.verbose = verbose
         self.board_size = board_size
         self.spawn_frequency = spawn_frequency
-        self.radar_radius = max(board_size // 4, 10)
+        self.radar_radius = radar_radius
         self.agent_position = (board_size // 2, board_size // 2)
         self.pokemon_selector = ps.Pokemon_selector()
         self.pokedex = self.pokemon_selector.pokedex

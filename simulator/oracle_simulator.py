@@ -4,16 +4,18 @@ import oracle_agent
 import random_board
 import random_agent
 import regional_board
+sys.path.insert(0, './../utils')
+import configurations as cf
 
 # oracle agent and random agent has the same interface, so we can use
 # the same simualtor to simulate them
 
 def simulate(board, agent):
-    rb = board(50, verbose = False)
+    rb = board()
     total_rewards_received = 0
     total_pokemon_num_catched = 0
 
-    for _ in range(3000):
+    for _ in range(cf.NUM_ITERATIONS):
         (rewards, pokemons_caught, catched_num, _) = rb.move_agent(agent.make_decision(rb))
         total_rewards_received += rewards
         total_pokemon_num_catched += catched_num

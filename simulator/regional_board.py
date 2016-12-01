@@ -1,10 +1,12 @@
 import random
 from random_board import Random_board
-
+import sys
+sys.path.insert(0, './../utils')
+import configurations as cf
 
 
 class Regional_board(Random_board):
-    def __init__(self, board_size, spawn_frequency = 2, verbose = True, nearby_variance= 2):
+    def __init__(self, board_size = cf.WORLD_SIZE, spawn_frequency = cf.SPAWN_FREQUENCY, verbose = cf.BOARD_VERBOSE, nearby_variance = cf.NEARBY_VARIANCE):
         super(Regional_board, self).__init__(board_size, spawn_frequency, verbose, nearby_variance)
 
         # this is a dictionary which contains the center of all the pokemons spawns

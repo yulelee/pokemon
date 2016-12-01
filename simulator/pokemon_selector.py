@@ -1,9 +1,12 @@
 from scipy import stats
 import random
 import json
+import sys
+sys.path.insert(0, './../utils')
+import configurations as cf
 
 class Pokemon_selector():
-    def __init__(self, neighbor_rate = 0.02):
+    def __init__(self, neighbor_rate = cf.NEIGHBOR_RATE):
         with open('../preprocess/JSON/pokemon_freq.json') as freq_table_file:
             self.freq_table = json.load(freq_table_file)
 

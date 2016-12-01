@@ -1,10 +1,5 @@
 import random
 
-######################### Constants
-
-# The size of the board:
-WORLD_SIZE = 30
-
 
 ######################### Pokemon_spawn
 # Represent the information about a spawn of a certian pokemon.

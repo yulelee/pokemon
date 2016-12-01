@@ -3,10 +3,12 @@
 
 import random
 import math
-
+import sys
+sys.path.insert(0, './../utils')
+import configurations as cf
 
 class Reflect_agent():
-    def __init__(self, legal_actions = None, exploration_prob = 0.2, verbose = False):
+    def __init__(self, legal_actions = None, exploration_prob = cf.EXPLORATION_RATE, verbose = cf.AGENT_VERBOSE):
         # still explore
         self.exploration_prob = exploration_prob
         self.verbose = verbose

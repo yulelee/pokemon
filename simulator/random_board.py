@@ -2,12 +2,13 @@ import random
 import sys
 sys.path.insert(0, './../utils')
 from data_types import pokemon_spawn
+import configurations as cf
 import pokemon_selector as ps
 import json
 
 class Random_board(object):
 
-    def __init__(self, board_size, spawn_frequency = 2, verbose = False, nearby_variance = 2):
+    def __init__(self, board_size = cf.WORLD_SIZE, spawn_frequency = cf.SPAWN_FREQUENCY, verbose = cf.BOARD_VERBOSE, nearby_variance = cf.NEARBY_VARIANCE):
         self.verbose = verbose
         self.board_size = board_size
         self.spawn_frequency = spawn_frequency

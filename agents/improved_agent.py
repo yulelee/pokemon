@@ -2,13 +2,16 @@
 
 import random
 import math
+import sys
+sys.path.insert(0, './../utils')
+import configurations as cf
 
 # a semi-general q-learning algorithm for the pokemon go game,
 # the state is represented by the current position, and the radar information
 # the legal_action is defined by the board
 
 class Improved_agent():
-    def __init__(self, legal_actions = None, exploration_prob = 0.2):
+    def __init__(self, legal_actions = None, exploration_prob = cf.EXPLORATION_RATE):
         self.exploration_prob = exploration_prob
         self.weights = {}
         self.num_iters = 0

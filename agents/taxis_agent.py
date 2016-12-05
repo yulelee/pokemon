@@ -10,6 +10,10 @@ import utilities as ut
 from scipy import stats
 
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 class Taxis_agent():
     def __init__(self, legal_actions = None, exploration_prob = cf.EXPLORATION_RATE, verbose = cf.AGENT_VERBOSE):
         # still explore
@@ -32,8 +36,16 @@ class Taxis_agent():
         self.pokemon_count = {}
 
 
+        # propose a new counter, just count when the pokemon is caught at a place
+        self.mixed_probs = self._new_prob()
+
+
     def _sigmoid(self, x):
         return 1.0 / (1 + math.exp(x))
+
+
+    def _inverse_sigmoid(self, y):
+        return - math.log(1.0 / y + 1)
 
 
     def _sigmoid_gradient(self, sig):
@@ -47,15 +59,30 @@ class Taxis_agent():
                 if zero_out:
                     new_prob[(x, y)] = 0
                 else:
-                    new_prob[(x, y)] = 1.0 / (self.board_size * self.board_size)
+                    new_prob[(x, y)] = 0.5
         return new_prob
 
 
     def _normalize_prob(self, prob):
         total = sum(prob.values())
-        for x in range(self.board_size):
-            for y in range(self.board_size):
-                prob[(x, y)] /=  total
+        for position in prob:
+            prob[position] /=  total
+
+
+    def _exp_prob(self, prob):
+        for position in prob:
+            prob[position] = math.exp(prob[position])
+
+
+    def _max_in_prob(self, prob):
+        max_prob = -1
+        best_position = None
+        for position in prob:
+            if prob[position] > max_prob:
+                max_prob = prob[position]
+                best_position = position
+
+        return position
 
 
     # borders mark out the four values of the region border
@@ -65,15 +92,21 @@ class Taxis_agent():
         if pokemon_id not in self.probs:
             self.probs[pokemon_id] = self._new_prob()
 
+
         (start_x, start_y, end_x, end_y) = borders
-        learning_rate /= ((end_y - start_y) + (end_x - start_x))
+        # learning_rate /= ((end_x - start_x) * (end_y - start_y))
 
         prob = self.probs[pokemon_id]
         for x in range(start_x, end_x):
             for y in range(start_y, end_y):
-                prob[(x, y)] += learning_rate * self._sigmoid_gradient(prob[(x, y)])
+                # sigmoid_x = self._inverse_sigmoid(prob[(x, y)])
+                # prob[(x, y)] = self._sigmoid(sigmoid_x + learning_rate)
 
-        self._normalize_prob(prob)
+                prob[(x, y)] += learning_rate
+
+                # print prob[(x, y)]
+
+        # self._normalize_prob(prob)
 
 
     # position is only one position
@@ -83,10 +116,20 @@ class Taxis_agent():
         # lazy construction
         if pokemon_id not in self.probs:
             self.probs[pokemon_id] = self._new_prob()
+        
         prob = self.probs[pokemon_id]
-        prob[position] += learning_rate * self._sigmoid_gradient(prob[position])
-        prob[position] = max(prob[position], 0)
-        self._normalize_prob(prob)
+        # if prob[position] == 0:
+            # print prob
+            # print sum(prob.values())
+
+        prob[position] += learning_rate
+
+        # sigmoid_x = self._inverse_sigmoid(prob[position])
+        # prob[position] = self._sigmoid(sigmoid_x + learning_rate)
+
+        # prob[position] += learning_rate * self._sigmoid_gradient(prob[position])
+        # prob[position] = max(prob[position], 0)
+        # self._normalize_prob(prob)
 
 
     # knowing the source and destination of the agent, what is the action to take?
@@ -105,9 +148,20 @@ class Taxis_agent():
     def get_action(self, state):
         self.num_iters += 1
 
+
+        if self.num_iters % 10000 == 0:
+            image = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+            for (x, y) in self.probs[16]:
+                image[x][y] = self.probs[16][(x,y)]
+            plt.imshow(image, cmap='hot', interpolation='nearest')
+            plt.show()
+
+        # if self.num_iters % 10 == 0: print state[0]
+
         # explore
         if random.random() < self.exploration_prob or len(self.probs) == 0: 
             return random.choice(self.legal_actions())
+        
         (agent_position, radar) = state
 
         # get the best action 
@@ -118,20 +172,24 @@ class Taxis_agent():
         voting_prob = self._new_prob(zero_out = True)
         for pokemon_id in radar:
             if pokemon_id in self.probs:
-                for position in self.probs[pokemon_id].keys():
-                    voting_prob[position] += self.probs[pokemon_id][position]
+                (start_x, start_y, end_x, end_y) = ut.get_radar_region(agent_position, self.radar_radius, self.board_size)
+                for x in range(start_x, end_x):
+                    for y in range(start_y, end_y):
+                        voting_prob[(x, y)] += self.probs[pokemon_id][(x, y)] 
+                        # / math.log(self.pokemon_count[pokemon_id] + 1)
 
         if sum(voting_prob.values()) == 0: return random.choice(self.legal_actions())
 
+        # self._exp_prob(voting_prob)
         self._normalize_prob(voting_prob) 
-        
+
         destination_selector = stats.rv_discrete(values = (range(self.board_size * self.board_size), voting_prob.values()))
         return self._get_direction(agent_position, voting_prob.keys()[destination_selector.rvs()])
 
 
     def incorperate_feedback(self, state, action, reward, pokemons_caught, new_state):
         # the game could last forever, so there is no end state defined
-        (agent_position, radar) = state
+        (agent_position, radar) = new_state
 
         if len(radar) > 0:
             borders = ut.get_radar_region(agent_position, self.radar_radius, self.board_size)
@@ -142,12 +200,23 @@ class Taxis_agent():
                 self.pokemon_count[pokemon_id] += 1
 
                 # increase the probability of this pokemon for nearby regions
-                self._increment_probs(borders, pokemon_id, 1)
+                self._increment_probs(borders, pokemon_id, 0.001) # 0.001
+
+                # self._increment_prob(agent_position, pokemon_id, 0.001) # 0.1
 
                 # decrease the probability of finding the pokemon in the radar but not here
-                self._increment_prob(agent_position, pokemon_id, -1)
+                # if pokemon_id not in pokemons_caught:
+                #     self._increment_prob(agent_position, pokemon_id, -0.5)
 
         for pokemon_id in pokemons_caught:
-            self._increment_prob(agent_position, pokemon_id, 1)
+            print pokemon_id
+
+            if pokemon_id not in self.probs:
+                self.probs[pokemon_id] = self._new_prob()
+
+            # self._increment_prob(agent_position, pokemon_id, 1)
+            for position in self.mixed_probs:
+                mht_dis = abs(agent_position[0] - position[0]) + abs(agent_position[1] - position[1])
+                self.probs[pokemon_id][position] += 0.1 * math.exp(- mht_dis)
 
 

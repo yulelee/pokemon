@@ -94,6 +94,13 @@ ENV/
 data/
 preprocess/JSON
 
+### add for the poster
+*.ai
+*.jpg
+*.png
+images
+print
+
 ### Latex intermediate files
 *.aux
 *.log

@@ -35,9 +35,9 @@ class Random_board(object):
     def possible_moves(self):
         result = []
         if self.agent_position[0] > 0: result.append('Left')
-        if self.agent_position[0] < self.board_size: result.append('Right')
+        if self.agent_position[0] < self.board_size - 1: result.append('Right')
         if self.agent_position[1] > 0: result.append('Down')
-        if self.agent_position[1] < self.board_size: result.append('Up')
+        if self.agent_position[1] < self.board_size - 1: result.append('Up')
         return result
 
 
@@ -71,8 +71,8 @@ class Random_board(object):
     def _nearby_pokemons(self):
         (start_x, start_y, end_x, end_y) = ut.get_radar_region(self.agent_position, self.radar_radius, self.board_size)
         result = []
-        for x in range(start_x, end_x + 1):
-            for y in range(start_y, end_y + 1):
+        for x in range(start_x, end_x):
+            for y in range(start_y, end_y):
                 if (x, y) in self.board: # if this position contains any pokemon
                     manhattan_dis = abs(x - self.agent_position[0]) + abs(y - self.agent_position[1])
                     result.extend([(manhattan_dis, pokemon) for pokemon in self.board[(x, y)]])

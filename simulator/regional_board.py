@@ -15,8 +15,15 @@ class Regional_board(Random_board):
 
     def _init_position(self, pokemon_id):
         if pokemon_id not in self.regional_center:
-            self.regional_center[pokemon_id] = super(Regional_board, self)._init_position(pokemon_id)
-            if self.verbose:
-                print 'set up center for', self.pokedex[pokemon_id], 'at', self.regional_center[pokemon_id]
+            position = super(Regional_board, self)._init_position(pokemon_id)
+
+            # give a breath region on the borders
+            position = (min(self.board_size - 2, max(1, position[0])), min(self.board_size - 2, max(1, position[1])))
+
+            self.regional_center[pokemon_id] = position
+
+            # if pokemon_id == 19 or pokemon_id == 16:
+            #     print 'set up center for', self.pokedex[pokemon_id - 1], 'at', self.regional_center[pokemon_id]
+            
         return super(Regional_board, self)._random_nearby_positions(self.regional_center[pokemon_id], 1)[0]
 

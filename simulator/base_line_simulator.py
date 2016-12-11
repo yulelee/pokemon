@@ -6,6 +6,7 @@ import base_line_agent
 import improved_agent
 import reflect_agent
 import taxis_agent
+import taxis_agent_two
 sys.path.insert(0, './../utils')
 import configurations as cf
 
@@ -42,7 +43,7 @@ def simulate(board, agent):
         total_rewards_received += reward
         total_pokemon_num_catched += caught_num
 
-        if i % ITERATOIN_INTERVAL == 0:
+        if i % ITERATOIN_INTERVAL == 0 and i > 1:
             interval_rewards_received = total_rewards_received - total_rewards_received_commit
             interval_pokemon_num_catched = total_pokemon_num_catched - total_pokemon_num_catched_commit
             interval_total_spawn_num = bd.total_spawn_num - total_spawn_num_commit
@@ -59,6 +60,15 @@ def simulate(board, agent):
             total_rewards_received_commit = total_rewards_received
             total_pokemon_num_catched_commit = total_pokemon_num_catched
             total_spawn_num_commit = bd.total_spawn_num
+
+
+            # plot the real distribution of pokemons
+            image = [[0 for _ in range(bd.board_size)] for _ in range(bd.board_size)]
+            for x in range(bd.board_size):
+                for y in range(bd.board_size):
+                    image[x][y] = bd.spawn_count[16][(x, y)]
+            plt.imshow(image, cmap='hot', interpolation='nearest')
+            plt.show()
 
 
     print bd.total_spawn_score, total_rewards_received, (total_rewards_received * 1.0 / bd.total_spawn_score)
@@ -98,7 +108,12 @@ def simulate(board, agent):
 
 # print 'taxis agent'
 # simulate(random_board.Random_board, taxis_agent.Taxis_agent())
-simulate(regional_board.Regional_board, taxis_agent.Taxis_agent())
+# simulate(regional_board.Regional_board, taxis_agent.Taxis_agent())
+
+# print 'taxis agent'
+# simulate(random_board.Random_board, taxis_agent.Taxis_agent())
+simulate(regional_board.Regional_board, taxis_agent_two.Taxis_agent_two())
+
 
 #import cProfile
 #import re

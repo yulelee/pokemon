@@ -32,6 +32,8 @@ class Random_board(object):
         with open('../preprocess/JSON/pokemon_score.json') as score_file:
             self.scores = json.load(score_file)
 
+        self.spawn_count = {pokemon_id: ut._new_prob(zero_out = True) for pokemon_id in range(152)}
+
     def possible_moves(self):
         result = []
         if self.agent_position[0] > 0: result.append('Left')
@@ -66,6 +68,9 @@ class Random_board(object):
         if self.verbose: print pokemon[1] + ' spawned at ' + str(position)
         self.total_spawn_num += 1
         self.total_spawn_score += self.scores[pokemon[0] - 1]
+
+        self.spawn_count[pokemon[0]][position] += 1
+
 
     # the rader, detect the nearby pokemons
     def _nearby_pokemons(self):
